@@ -1,0 +1,219 @@
+---
+title: "DATA609 - Homework One - Chapter One"
+author: "Chris G Martin"
+date: "February 12, 2017"
+output:
+  pdf_document:
+    fig_caption: yes
+    highlight: pygments
+    latex_engine: xelatex
+    number_sections: no
+  html_document:
+    fig_caption: yes
+    force_captions: yes
+    highlight: pygments
+    number_sections: no
+    theme: united
+fontsize: 11pt
+---
+
+#Week One Homework
+
+##Page 8: 10
+
+Your grandparents have an annuity. The value of the annuity increases each month by an automatic deposit of 1% interest on the previous month's balance. Your grandparents withdraw \$1,000 at the beginning of each month for living expenses. Currently, they have \$50,000 in the annity. Model the annuity with a dynamical system. Will the annuity run out of money? When? Hint: What value will a(n) have when the annuity is depleted?
+
+**SOLUTION**
+To solve this problem I created a dataframe to work through the formula for me and find the point at which a(n+1) crosses 0. This is the 69th month, at which time the value remaining in the account is $655.28
+
+```{r}
+#future value = present value + change
+#a0 = 50000
+#^ = delta
+#^a(n) = a(n+1) - a(n) = 0.01a(n) - 1000
+#a(n+1) = a(n) + 0.01*a(n) - 1000
+
+q1 <- data.frame(months=0:100, balance=0)
+q1[1,2] <- 50000
+
+for (i in 2:100){
+  n <- i - 1
+  q1[i,2] <-  q1[n,2] + q1[n,2] * 0.01 - 1000
+  i <- i +1
+}
+
+q1[70,]
+q1[71,]
+```
+
+
+##Page 17: 9
+
+The data in the accompanying table show the speed n (in increments of 5 mph) of an automobile and the associated distance a(n) in feet required to stop it once the breaks are applied. For instance, n = 6 (representing 6 x 5 = 30 mph) requires a stopping distance of a(6) = 47 feet.
+
+**SOLUTION**
+**TABLE**
+
+```{r}
+q2 <- data.frame(n=1:16, an=c(3,6,11,21,32,47,65,87,112,140,171,204,241,282,325,376))
+head(q2)
+```
+
+a. Calculate and plot the change [delta]a(n) versus n. Does the graph reasonably approximate a linear relationship?
+
+**SOLUTION**
+
+Yes, the plot does approximate a linear relationship.
+
+```{r, warning=FALSE}
+q2$delta <- 0
+q2[1,3]
+
+for (i in 2:16){
+  n <- i - 1
+  q2[i,3] <- q2[i,2] - q2[n,2]
+  i <- i +1
+}
+
+head(q2)
+
+library(ggplot2)
+ggplot(q2, aes(x=n, y=an)) + geom_line()
+ggplot(q2, aes(x=n, y=delta)) + geom_line()
+```
+
+
+b. Based on your conclusions in part a, find a difference equation model for the stopping distance data. Test your model by plotting the errors in the predicted values against n. Discuss the appropriateness of the model.
+
+```{r}
+#difference equation model
+#k = a(n+1) / delta@a(n+1)
+#k = 6 / 3
+#k = 2
+k <-2
+
+q2$newestimated <- 0
+
+for (i in 1:16){
+  q2[i,4] <- q2[i,1] * k
+  i <- i +1
+}
+
+q2$difference <- 0
+
+for (i in 1:16){
+  q2[i,5] <- q2[i,2] - q2[i,4]
+  i <- i +1
+}
+
+ggplot(q2, aes(x=n)) + geom_line(aes(y = an), color='red') + geom_line(aes(y = difference), color='blue') + scale_colour_manual("", breaks=c('an', 'difference'), values=c('red', 'blue'))
+```
+
+
+
+##Page 34: 13
+
+Consider the spreading of a rumor through a company of 1,000 employees, all working in the same building. We assume that the spreading of a rumor is similar to the spreading of a contagious disease in the number of people hearing about the rumor each day is proportional to the product of the number who have heard the rumor previously and the number who have not heard the rumor. This is given by:
+
+$r(n+1) = r(n) + kr(n)*(1000 - r(n))$
+
+where k is a parameter that depends on how fast the rumor spreads and n is the number of days. Assume k = 0.001 and further assume that four people initially have heard the rumor. How soon will all 1,000 employees have heard the rumor?
+
+**SOLUTION**
+
+```{r}
+q3 <- data.frame(days=1:20)
+q3$heard <- 0
+q3$heard[1] <- 4
+k <- 0.001
+
+for (i in 2:20){
+  n <- i - 1
+  q3[i,2] <- q3[n,2] + (k *  q3[n,2] * (1000 - q3[n,2]))
+}
+
+head(q3)
+```
+
+It will take `r q3[14,1]` days.
+
+#Page 55: 6
+
+An economist is interested in the variation of the price of a single product. It is observed that a high price for the product in the market attracts more supplers. However, increasing the quantity of the product supplied tends to drive the price down. Over time, there is an interaction between price and supply. The economist has proposed the following model, ,where P(n) represents the price of the product at year n, and Q(n) represents the quantity. Find the equilibrium values for this system.
+
+$P(n+1) = P(n) - 0.1 * (Q(n) - 500)$
+
+$Q(n+1) = Q(n) + 0.2 * (P(n) - 100)$
+
+**SOLUTION**
+The equilibrium values for this system are:
+$P = 100$
+$Q = 500$
+
+
+a. Does the model make sense intuitively? What is the significance of the constants 100 and 500? Explain the significance of the signs of the constants -0.1 and 0.2..
+
+Intuitively, the model does not make sense. For example, using the non-equilibrium values of P = \$200 and Q = 400, P1 = \$210 and Q1 = 420. Both will continue to grow to infinity. The constraints are set to be a celing or wall (such as setting a maximum/minimum price or maximum/minimum quantity of product), but here it is used to create the equilibrium. The significance of the negative sign is to indicate that as quantity increases above the equilibrium value then the price decreases, while the positive value indicates that as the price increases above the equilibrium value the quanitity will increase proportionally.
+
+
+b. Test the initial conditions in the following table and predict the long-term behaviour.
+
+```{r}
+q4 <- data.frame(case=c('Case A', 'Case B', 'Case C', 'Case D'), price=c(100, 200, 100, 100), quantitiy=c(500, 500, 600, 400))
+
+q4
+```
+
+
+```{r}
+#Case A
+#equilibrium value
+caseA <- data.frame(price=100, quantity=500)
+
+for (i in 2:20){
+  n <- i - 1
+  caseA[i, 1] <- caseA[n, 1] - 0.1 * (caseA[n, 2] - 500)
+  caseA[i, 2] <- caseA[n, 2] + 0.2 * (caseA[n, 1] - 100)
+}
+
+caseA
+```
+
+```{r}
+#Case B
+caseB <- data.frame(price=200, quantity=500)
+
+for (i in 2:20){
+  n <- i - 1
+  caseB[i, 1] <- caseB[n, 1] - 0.1 * (caseB[n, 2] - 500)
+  caseB[i, 2] <- caseB[n, 2] + 0.2 * (caseB[n, 1] - 100)
+}
+
+caseB
+```
+
+```{r}
+#Case C
+caseC <- data.frame(price=100, quantity=600)
+
+for (i in 2:20){
+  n <- i - 1
+  caseC[i, 1] <- caseC[n, 1] - 0.1 * (caseC[n, 2] - 500)
+  caseC[i, 2] <- caseC[n, 2] + 0.2 * (caseC[n, 1] - 100)
+}
+
+caseC
+```
+
+```{r}
+#Case D
+caseD <- data.frame(price=100, quantity=400)
+
+for (i in 2:20){
+  n <- i - 1
+  caseD[i, 1] <- caseD[n, 1] - 0.1 * (caseD[n, 2] - 500)
+  caseD[i, 2] <- caseD[n, 2] + 0.2 * (caseD[n, 1] - 100)
+}
+
+caseD
+```

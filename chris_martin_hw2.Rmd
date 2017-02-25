@@ -1,0 +1,105 @@
+---
+title: "DATA609 - Homework Two - Chapter Two"
+author: "Chris G Martin"
+date: "February 12, 2017"
+fontsize: 11pt
+output:
+  html_document:
+    fig_caption: yes
+    force_captions: yes
+    highlight: pygments
+    number_sections: no
+    theme: united
+  pdf_document:
+    fig_caption: yes
+    highlight: pygments
+    latex_engine: xelatex
+    number_sections: no
+---
+
+#Week Two Homework
+
+##Page 69: 12
+
+From this vauge scenario, identify a problem you would like to study. Which variables affect the behavior you have identified in the problem identification? Which variables are the most important? Remember, there are really no right answers:
+
+A company with a fleet of trucks faces increasing maintenance costs as the age and milage of the trucks increased.
+
+The cost of maintenance is the main concern, and is affected by the age of the truck and the milage of the truck. I would initially try to find a relationship to each variable against the cost of maintenance, then attempt to model the two together against the cost. Digging further into this data, I could examine the frequency of maintenance, the routes the trucks drive, etc.
+
+
+##Page 79: 11
+
+Determine whether the data set supports the stated proportionality model. y (proportionate to) $x^3$
+
+```{r}
+q2 <- data.frame(y=c(0,1,2,6,14,24,37,58,82,114), x=c(1:10))
+q2
+```
+
+**SOLUTION**
+
+y does not seem proportional to $x^3$.
+
+```{r}
+
+q2$x3 <- q2$y^3
+q2$k <- q2$x3 / q2$x
+q2
+```
+
+##Page 94: 4
+
+Lumber Cutters -- Lumber cutters wish to use readily available measurements to estimate the number of board feet of lumber in a tree. Assume they measure the diameter of the tree in inches at waist height. Develop a model that predicts board feet as a function of diameter in inches.
+
+Use the folling data for your test:
+
+```{r}
+q3 <- data.frame(x=c(17, 19, 20, 23, 25, 28, 32, 38, 39, 41), y=c(19, 25, 32, 57, 71, 113, 123, 252, 259, 294))
+q3
+```
+
+The variable x is the diameter of a ponderosa pine in inches, and y is the number of board feet divided by 10.
+
+```{r}
+q3$y <- q3$y * 10
+q3$delta <- 0
+
+for (i in 2:10){
+  n <- i - 1
+  q3[i,3] <- q3[i,2] - q3[n,2]
+}
+
+q3$two <- q3$x^(15/7)
+
+ggplot(q3, aes(x=x)) + geom_line(aes(y=y), colour='red') + geom_line(aes(y=two), colour='blue')
+
+```
+
+a. Consider two separate assumptions, allowing each to lead to a model. Completely analyze each model.
+
+i. Assume that all tress are right-circular cylinders and are approximately the same height.
+
+If the trees were approximately the same height, the number of board feet would be directly proportional to the diameter of the tree and the model would be simply a straight-line.
+
+ii. Assume that all tress are right-circular cylinders and that the height of the tree is proportional to the diameter.
+
+If the the height of the tree were proportional to the diameter, the number of board feet could be predicted by measuring either of the dimensions and would likely be proportional at an exponential level.
+
+b. Which model appears to be better? Why? Justify your conclusions.
+
+I'd assume the more accurate model would be if the trees were approximately the same height. But I wouldn't necessarily call one 'better', just different.
+
+
+
+##Page 99: 3
+
+Discuss several factors that were completely ignored in our analysis of gasoline milage problem.
+
+Some factors that were ignored in the analysis were the impacts of power types (i.e. 4-wheel-drive or 2-wheel-drive), weather conditions (humidity, rain, temperature, air pressure, wind speed and direction), geographic consderations (altitude, curvature), and other various factors (tire pressure, etc).
+
+##Page 104: 2
+
+Tests exist to measure the percentage of body fat. Assume that such tests are accurate and that a great many carefully collected data are available. You may specify any other statistics, such as waist size and height, that you would like collected. Explain how the data could be arranged to check the assumptions underlying the submodels in this section. For example, suppose the data for males between ages 17 and 21 with constant body fat and height are examined. Explain how the assumption of constant density of the inner core could be checked.
+
+Data could be arranged in a system of proportionality, where items such as bone density, muscle mass, height, age, waist size, arm lengths, etc. are compiled and body fat is essentially a propotional output of their combined measurements. The proportionality could be checked individually, against a range of estimated body fat perecentage (i.e. the assumption would be considered 'accurate' if it falls within the range of accepted measurements).

@@ -1,0 +1,375 @@
+---
+title: "DATA609 - Homework Four - Chapter Five"
+author: "Chris G Martin"
+date: "February 26, 2017"
+output:
+  html_document:
+    fig_caption: yes
+    force_captions: yes
+    highlight: pygments
+    number_sections: no
+    theme: united
+  pdf_document:
+    fig_caption: yes
+    highlight: pygments
+    latex_engine: xelatex
+    number_sections: no
+fontsize: 11pt
+---
+
+#Week Four Homework
+
+```{r echo=FALSE, message=FALSE, error=FALSE}
+library(ggplot2)
+library(splines)
+```
+
+##Page 191: 3
+
+Using Monte Carlo simulation, write an algorithm to calculate an approximation to pi by considering the number of random points selected inside the quarter circle
+
+$Q : x^2 + y^2 = 1, x>= 0, y >= 0$
+
+where the quarter circle is taken to be inside the square
+
+$S : 0 <= x <= 1 and 0 <= y <= 1$
+
+Use the equation pi/4 = area Q / area S.
+
+
+```{r}
+q1MC <- function(n){
+  counter <- 0
+  for(i in 1:n){
+    x <- runif(1, min=0, max=1)   #random generate x
+    y <- runif(1, min=0, max=1)   #random generate y
+    if(x^2 + y^2 < 1){
+      counter <- counter + 1
+    }
+  }
+  counter / n * 4
+}
+
+q1table <- data.frame(n=c(seq(from = 500, to = 5000, by  = 500)))
+q1table$estimatedpi <- 0
+
+for(i in 1:10){
+  q1table[i,2] <- q1MC(q1table[i,1])
+}
+
+q1table
+```
+
+
+
+##Page 194: 1
+
+Use the middle-square method to generate
+
+a. 10 random numbers using x(0) = 1009.
+
+```{r}
+q2a <- 1009
+q2tablea <- data.frame(x=c(1:10))
+q2tablea$x0 <- 0
+q2tablea[1,2] <- q2a
+for(i in 2:10){
+  n <- i - 1
+  j <- q2tablea[n,2]^2
+  if(nchar(as.character(q2tablea[n,2]^2))<8){
+    j <- paste('0', as.character(q2tablea[n,2]^2), sep="")}
+  if(nchar(j)<8){
+    j <- paste('0', j, sep="")}
+  if(nchar(j)<8){
+    j <- paste('0', j, sep="")}
+  if(nchar(j)<8){
+    j <- paste('0', j, sep="")}
+  if(nchar(j)<8){
+    j <- paste('0', j, sep="")}
+  if(nchar(j)<8){
+    j <- paste('0', j, sep="")}
+  if(nchar(j)<8){
+    j <- paste('0', j, sep="")}
+  if(nchar(j)<8){
+    j <- paste('0', j, sep="")}
+  if(nchar(j)<8){
+    j <- paste('0', j, sep="")}
+  
+  q2tablea[i,2] <- as.integer(substr(j, 3, 6))
+}
+
+q2tablea
+```
+
+
+
+b. 20 random numbers using x(0) = 653217.
+
+```{r}
+q2b <- 653217
+q2tableb <- data.frame(x=c(1:20))
+q2tableb$x0 <- 0
+q2tableb[1,2] <- q2b
+
+for(i in 2:20){
+  n <- i - 1
+  j <- q2tableb[n,2]^2
+  if(nchar(as.character(q2tableb[n,2]^2))<12){
+    j <- paste('0', as.character(q2tableb[n,2]^2), sep="")}
+  if(nchar(j)<12){
+    j <- paste('0', j, sep="")}
+  if(nchar(j)<12){
+    j <- paste('0', j, sep="")}
+  if(nchar(j)<12){
+    j <- paste('0', j, sep="")}
+  if(nchar(j)<12){
+    j <- paste('0', j, sep="")}
+  if(nchar(j)<12){
+    j <- paste('0', j, sep="")}
+  if(nchar(j)<12){
+    j <- paste('0', j, sep="")}
+  if(nchar(j)<12){
+    j <- paste('0', j, sep="")}
+  if(nchar(j)<12){
+    j <- paste('0', j, sep="")}
+  if(nchar(j)<12){
+    j <- paste('0', j, sep="")}
+  if(nchar(j)<12){
+    j <- paste('0', j, sep="")}
+  if(nchar(j)<12){
+    j <- paste('0', j, sep="")}
+  q2tableb[i,2] <- as.integer(substr(j, 3, 6))
+}
+
+
+q2tableb
+```
+
+
+c. 15 random numbers using x(0) = 3043.
+
+```{r}
+q2c <- 3043
+q2tablec <- data.frame(x=c(1:15))
+q2tablec$x0 <- 0
+q2tablec[1,2] <- q2c
+
+for(i in 2:15){
+  n <- i - 1
+  j <- q2tablec[n,2]^2
+  if(nchar(as.character(q2tablec[n,2]^2))<8){
+    j <- paste('0', as.character(q2tablec[n,2]^2), sep="")}
+  if(nchar(j)<8){
+    j <- paste('0', j, sep="")}
+  if(nchar(j)<8){
+    j <- paste('0', j, sep="")}
+  if(nchar(j)<8){
+    j <- paste('0', j, sep="")}
+  if(nchar(j)<8){
+    j <- paste('0', j, sep="")}
+  if(nchar(j)<8){
+    j <- paste('0', j, sep="")}
+  if(nchar(j)<8){
+    j <- paste('0', j, sep="")}
+  if(nchar(j)<8){
+    j <- paste('0', j, sep="")}
+  if(nchar(j)<8){
+    j <- paste('0', j, sep="")}
+  
+  q2tablec[i,2] <- as.integer(substr(j, 3, 6))
+}
+
+q2tablec
+```
+
+
+d. Comment about the results of each sequence. Was there cycling? Did each sequence degenerate rapidly?
+
+
+The first and second tables degenerated very rapidly, while the third table began to cycle.
+
+
+##Page 201: 4
+
+Horse Race -- Construct and perform a Monte Carlo simulation of a horse race. You can be creative and use odds from the newspaper, or simulate the Mathematical Derby with the entries and odds shown in the following table.
+
+```{r}
+q3 <- data.frame('Entry Name'=c('Eulers Folly', 'Leapin Leibniz', 'Newton Lobell', 'Count Cauchy', 'Pumped up Poisson', 'Loping LHopital', 'Steamin Stokes', 'Dancin Dantzig'), odds=c('7-1', '5-1', '9-1', '12-1', '4-1', '35-1', '15-1', '4-1'))
+q3
+```
+
+Construct and perform a Monte Carlo simulation of 1000 horse races. Which horse won the most races? Which horse won the fewest races? Do these results surprise you? Provide the tallies of how many races each horse won with your output.
+
+```{r}
+#create cumulative sum probabilities of a win
+q3$prob <-c(7/8, 5/6, 9/10, 12/13, 4/5, 35/36, 15/16, 4/5)
+q3$weighted <- q3$prob / sum(q3$prob) #weighted probability of winning
+q3$cumsum <- q3$weighted
+for(i in 2:8){
+  n <- i - 1
+  q3[i, 5] <- q3[n,5]+q3[i,4]
+  i <- i + 1
+}
+```
+
+```{r}
+#monte carlo simulation
+countera <- 0
+counterb <- 0
+counterc <- 0
+counterd <- 0
+countere <- 0
+counterf <- 0
+counterg <- 0
+counterh <- 0
+
+set.seed(123)
+y <- 1
+repeat{
+  y <- y+1
+  x <- runif(1, min=0, max=1)   #random generate x
+  if(x <= q3[1,5]){
+    countera <- countera + 1}
+  else if(x <= q3[2,5]){
+    counterb <- counterb + 1}
+  else if(x <= q3[3,5]){
+    counterc <- counterc + 1}
+  else if(x <= q3[4,5]){
+    counterd <- counterd + 1}
+  else if(x <= q3[5,5]){
+    countere <- countere + 1}
+  else if(x <= q3[6,5]){
+    counterf <- counterf + 1}
+  else if(x <= q3[7,5]){
+    counterg <- counterg + 1}
+  else if(x <= q3[8,5]){
+    counterh <- counterh + 1}
+  if(y ==1000){
+    break}
+}
+
+q3results <- data.frame(horse=c('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'), raceswon=c(countera, counterb, counterc, counterd, countere, counterf, counterg, counterh))
+q3results
+```
+
+
+##Page 211: 3
+
+In many situations, the time T between deliveries and the order quantity Q is not fixed. Instead, an order is placed for a specific amount of gasoline. Depending on how many orders are placed in a given time interval, the time to fill an order varies. You have no reason to believe that the performance of the delivery operation will change. Therefore, you have examined records for the past 100 deliveries for the past 100 deliveries and found the following lag times, or extra days, required to fill your order. L = Lag time (in days), N = Number of occurrences:
+
+```{r}
+q4 <- data.frame(L=c(2, 3, 4, 5, 6, 7), N=c(10, 25, 30, 20, 13, 2))
+q4
+
+```
+
+Construct a Monte Carlo simulation for the lag time submodel. If you have a handheld calculator or computer available, test your submodel by running 1000 trials and comparing the number of occurrences of the various lag times with the historical data.
+
+```{r}
+#create cumulative sum probabilities of a win
+q4$prob <- q4$N/sum(q4$N)
+q4$cumsum <- q4$prob
+for(i in 2:6){
+  n <- i - 1
+  q4[i, 4] <- q4[n,4]+q4[i,3]
+  i <- i + 1
+}
+q4
+```
+
+```{r}
+#monte carlo simulation
+countera <- 0
+counterb <- 0
+counterc <- 0
+counterd <- 0
+countere <- 0
+counterf <- 0
+
+set.seed(123)
+y <- 1
+repeat{
+  y <- y+1
+  x <- runif(1, min=0, max=1)   #random generate x
+  if(x <= q4[1,4]){
+    countera <- countera + 1}
+  else if(x <= q4[2,4]){
+    counterb <- counterb + 1}
+  else if(x <= q4[3,4]){
+    counterc <- counterc + 1}
+  else if(x <= q4[4,4]){
+    counterd <- counterd + 1}
+  else if(x <= q4[5,4]){
+    countere <- countere + 1}
+  else if(x <= q4[6,4]){
+    counterf <- counterf + 1}
+  if(y ==1000){
+    break}
+}
+
+q4results <- data.frame(LagTime=c(2:7), occurances=c(countera, counterb, counterc, counterd, countere, counterf))
+q4results
+```
+
+
+##Page 221: 2
+
+Use a smooth polynomial to fit the data in Table 5.18 to obtain arrivals and unloading times. Compare results to those in Tables 5.19 and 5.20.
+
+```{r}
+q5arrivals <- data.frame('time between arrivals'=c('15-24', '25-34', '35-44', '46-54', '55-64', '65-74', '75-84', '85-94', '95-104', '105-114', '115-124', '125-134', '135-145'), midtime=c(20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140), occurances=c(11, 35, 42, 61, 108, 193, 240, 207, 150, 85, 44, 21, 3))
+q5arrivals$prob <- q5arrivals$occurances / sum(q5arrivals$occurances)
+q5arrivals$cumsum <- q5arrivals$prob
+for(i in 2:length(q5arrivals$prob)){
+  n <- i - 1
+  q5arrivals[i, 5] <- q5arrivals[n,5]+q5arrivals[i,4]
+  i <- i + 1
+}
+q5arrivals
+ggplot(q5arrivals, aes(x=midtime, y=prob)) + geom_line()
+```
+
+```{r}
+q5unloading <- data.frame('unloading time'=c('45-49', '50-54', '55-59', '60-64', '65-69', '70-74', '75-79', '80-84', '85-90'), midtime=c(47, 52, 57, 62, 67, 72, 77, 82, 87), occurances=c(20, 54, 114, 103, 156, 223, 250, 171, 109))
+q5unloading$prob <- q5unloading$occurances / sum(q5unloading$occurances)
+q5unloading$cumsum <- q5unloading$prob
+for(i in 2:length(q5unloading$prob)){
+  n <- i - 1
+  q5unloading[i, 5] <- q5unloading[n,5]+q5unloading[i,4]
+  i <- i + 1
+}
+q5unloading
+ggplot(q5unloading, aes(x=midtime, y=prob)) + geom_line()
+```
+
+```{r}
+q5arrspl <- smooth.spline(x=q5arrivals$occurances, y=q5arrivals$midtime, w=q5arrivals$prob)
+
+q5arrivals$spline <- paste0(as.character(round(q5arrspl$y)), "+", as.character(q5arrspl$w), "* x")
+q5arrivals
+```
+
+```{r}
+q5unlspl <- smooth.spline(x=q5unloading$occurances, y=q5unloading$midtime, w=q5unloading$prob)
+
+q5unloading$spline <- paste0(as.character(round(q5unlspl$y)), "+", as.character(q5unlspl$w), "* x")
+q5unloading
+```
+
+
+```{r}
+q5arrspl <- interpSpline(q5arrivals$midtime, q5arrivals$occurances)
+q5arrspl
+
+plot(q5arrspl)
+points(q5arrivals$midtime, q5arrivals$occurances)
+```
+
+```{r}
+q5unlspl <- interpSpline(q5unloading$midtime, q5unloading$occurances)
+q5unlspl
+
+plot(q5unlspl)
+points(q5unloading$midtime, q5unloading$occurances)
+```
+

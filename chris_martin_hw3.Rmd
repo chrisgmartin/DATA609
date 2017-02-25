@@ -1,0 +1,378 @@
+---
+title: "DATA609 - Homework Three - Chapter Three and Four"
+author: "Chris G Martin"
+date: "February 19, 2017"
+output:
+  html_document:
+    fig_caption: yes
+    force_captions: yes
+    highlight: pygments
+    number_sections: no
+    theme: united
+  pdf_document:
+    fig_caption: yes
+    highlight: pygments
+    latex_engine: xelatex
+    number_sections: no
+fontsize: 11pt
+---
+
+#Week Three Homework
+
+```{r echo=FALSE, message=FALSE, error=FALSE}
+library(ggplot2)
+```
+
+##Page 113: 2
+
+The folowing table gives the elongation e in inches per inch (in./in) for a given stress S on a steel wire measure in pounds per square inch (lb/in^2). Test the model e = c(1)*S by plotting the data. Estimate c(1) graphically.
+
+```{r}
+q1 <- data.frame('S(x10^-3)'=c(5,10,20,30,40, 50, 60, 70, 80, 90, 100), 'e(x10^6)'=c(0, 19, 57, 94, 134, 173, 216, 256, 297, 343, 390))
+q1
+```
+
+```{r}
+ggplot(q1, aes(x=S.x10..3., y=e.x10.6.))+geom_point()
+```
+
+```{r}
+q1$C <- q1$S.x10..3. * 3.68
+ggplot(q1, aes(x=S.x10..3., y=e.x10.6.))+geom_point()+geom_line(aes(y=C), colour='red')
+```
+
+Determined by experimenting with various values of c(1) until the best fitting line (visually) was decided,
+
+##Page 121: 2a
+
+For the following data set, formulate the mathmatical model that minimizes the largest deviation between the data and the line y = ax + b. If a computer is available, solve for the estimates of a and b.
+
+```{r}
+q2 <- data.frame(x=c(1.0, 2.3, 3.7, 4.2, 6.1, 7.0), y=c(3.6, 3.0, 3.2, 5.1, 5.3, 6.8))
+q2
+```
+
+```{r}
+ggplot(q2, aes(x=x, y=y))+geom_point()
+```
+
+
+
+```{r}
+q2$fx <- q2$y - q2$y * q2$x
+q2
+
+q2lsfit <- lsfit(x=q2$x, y=q2$y)
+q2lsfit$coefficients
+```
+
+Therefore the formula for $y = ax + b$ is y = `r q2lsfit$coefficients[[2]]` * x + `r q2lsfit$coefficients[[1]]`.
+
+
+##Page 127: 10
+
+Fit the data with the models given, using least squares. Data for planets (fit the model y = a*x^(3/2)):
+
+```{r}
+q3 <- data.frame(body=c('Mercury', 'Venus', 'Earth', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune'), 'period (sec)'=c('7.60 x 10^6', '1.94 x 10^7', '3.16 x 10^7', '5.94 x 10^7', '3.74 x 10^8', '9.35 x 10^8', '2.64 x 10^9', '5.22 x 10^9'), 'distance from sun (m)'=c('5.79 x 10^10', '1.08 x 10^11', '1.50 x 10^11', '2.28 x 10^11', '7.79 x 10^11', '1.43 x 10^12', '2.87 x 10^12', '4.5 0x 10^12'))
+```
+
+For notation simplicity, let's change the labels for 'Distance from Sun' (m) to 'd' and 'Period (sec)' to 'p' and convert the factors to actual numbers.
+
+```{r}
+colnames(q3) <- c('planet', 'd', 'p')
+
+q3$d2 <- as.numeric(substr(q3$d, 1, 4)) * as.numeric(substr(q3$d, 7, 9))^as.numeric(substr(q3$d, 11, 11))
+q3$p2 <- as.numeric(substr(q3$p, 1, 4)) * as.numeric(substr(q3$p, 7, 9))^as.numeric(substr(q3$p, 11, 12))
+
+q3
+```
+
+```{r}
+ggplot(q3, aes(x=d2, y=p2, label=planet)) + geom_point() + geom_text(check_overlap=TRUE)
+```
+
+For a better (less accruate) chart, the logs are also charted:
+
+```{r}
+ggplot(q3, aes(x=log(d2), y=log(p2), label=planet))+geom_point()+ geom_label()
+```
+
+For the model $y = a * x^(3/2)$:
+
+$a = sumof(x(n,i)*y(i))/sumof(x(i)^2n)$
+
+```{r}
+q3$prod <- q3$d2^(3/2) * q3$p2
+q3$prod2 <- q3$d2^(2*(3/2))
+q3a <- sum(q3$prod) / sum(q3$prod2)
+```
+
+In this case a is `r q3a` which gives us the formula: y = `r q3a` * x^(3/2).
+
+```{r}
+q3$slope2 <- q3$d2^(3/2) * q3a
+```
+
+```{r}
+ggplot(q3, aes(x=p2, y=d2, label=planet)) + geom_point() + geom_label() + geom_line(aes(slope2), colour='red')
+
+```
+
+Out of curiousity, the logs are also plotted but do not appear to fit well.
+
+```{r}
+ggplot(q3, aes(x=log(p2), y=log(d2), label=planet)) + geom_point() + geom_label() + geom_line(aes(log(slope2)), colour='red')
+```
+
+##Page 136: 7
+
+a. In the following data, W represents the weight of a fish (bass) and l represents its length. Fit the model W = k*l^3 to the data using the least-squares criterion.
+
+```{r}
+q4a <- data.frame(l=c(14.5, 12.5, 17.25, 14.5, 12.625, 17.75, 14.125, 12.625), w=c(27, 17, 41, 26, 17, 49, 23, 16))
+q4a
+```
+
+$k = sumof(y(n,i)*x(i))/sumof(y(n,i)^2)$
+$k = sumof(l^3 * w) / sumof(l^6)$
+
+```{r}
+q4ak1 <- sum(q4a$l^3*q4a$w)
+q4ak2 <-sum(q4a$l^6)
+q4ak <- q4ak1/q4ak2
+```
+
+Using the least squares method we get a value for k of `r q4ak`, so that w = `r q4ak` * l^3.
+
+```{r}
+q4a$lr <- q4ak * q4a$l ^3
+ggplot(q4a, aes(x=l, y=w)) + geom_point() + geom_line(aes(y=lr, color='red'))
+```
+
+
+
+b. In the following data, g represents the girth of a fish. Fit the model W = k*l*g^2 to the data using the least-squares criterion.
+
+```{r}
+q4b <- data.frame(l=c(14.5, 12.5, 17.25, 14.5, 12.625, 17.75, 14.125, 12.625), g=c(9.75, 8.375, 11.0, 9.75, 8.5, 12.5, 9.0, 8.5), w=c(27, 17, 41, 26, 17, 49, 23, 16))
+q4b
+```
+
+
+
+$k = sumof(y(n,i)*x(i))/sumof(y(n,i)^2)$
+$k = sumof(l * g^2 * w) / sumof((l * g^2)^2)$
+
+```{r}
+sum(q4b$l * q4b$g^2 * q4b$w)
+sum((q4b$l * q4b$g^2)^2)
+365852.1/19590360
+
+q4bk1 <- sum(q4b$l * q4b$g^2 * q4b$w)
+q4bk2 <- sum((q4b$l * q4b$g^2)^2)
+q4bk <- q4bk1/q4bk2
+```
+
+Using the least squares method we get a value for k of `r q4bk`, so that w = `r q4bk` \* l \* g^2.
+
+```{r}
+q4b$lr <- q4bk * q4b$l * q4b$g^2
+ggplot(q4b, aes(x=l, y=w)) + geom_point() + geom_line(aes(y=lr, color='red'))
+```
+
+
+c. Which of the two models fits the data better? Justify fully. Which model do you prefer? Why?
+
+```{r}
+q4aSSE <- sum((q4a$w - q4a$lr)^2)
+q4bSSE <- sum((q4b$w - q4b$lr)^2)
+q4aABS <- sum(abs((q4a$w - q4a$lr)^3))
+q4bABS <- sum(abs((q4b$w - q4b$lr)^3))
+q4aMAX <- max(abs(q4a$w - q4a$lr))
+q4bMAX <- max(abs(q4b$w - q4b$lr))
+```
+
+The SSE for the first problem is `r q4aSSE` while the SSE for the second is `r q4bSSE`. The Absolute error for the first problem is `r q4aABS` and the second problem is `r q4bABS`. The largest error for the first problem is `r q4aMAX` and the second problem is `r q4bMAX`.
+
+Numerically, the first problem seems to fit best on all three metrics, in which case it is the preferred model.
+
+
+##Page 146: 5
+
+Solve these four problems with the model $V = m(logP)+b$. Compare the errors with those computed in the fourth. Compare the two models. Which is better?
+
+a. Population and mean velocty over a 50-foot course, for 15 locations. Location (only included city name for simplicity), Population (P), Mean Velocity (ft/sec) (V).
+
+$V = m(logP)+b$
+
+```{r}
+q5a <- data.frame(location=c('Brno', 'Prague', 'Corte', 'Bastia', 'Munich', 'Psychro', 'Itea', 'Iraklion', 'Athens', 'Safed', 'Dimona', 'Netanya', 'Jerusalem', 'New Haven', 'Brooklyn'), P=c(341948, 1092759, 5491, 49375, 1340000, 365, 2500, 78200, 867023, 14000, 23700, 70700, 304500, 138000, 2602000), V=c(4.81, 5.88, 3.31, 4.90, 5.62, 2.76, 2.27, 3.85, 5.21, 3.70, 3.27, 4.31, 4.42, 4.39, 5.05))
+q5a
+```
+
+```{r}
+#slope
+q5ak1 <- sum(log10(q5a$P)*q5a$V)
+q5ak2 <-sum(log10(q5a$P)^2)
+q5ak <- q5ak1/q5ak2
+#intercept using Brno
+q5ab <- -(q5ak * log10(q5a$P[1])) + q5a$V[1]
+```
+
+Using the least squares method we get a value for m of `r q5ak`, so that P = `r q5ak` * log10(V) + `r q5ab`.
+
+b. Graph the equation superimposed over the original scatterplot.
+
+```{r}
+q5a$lr <- q5ak * log10(q5a$P) + q5ab
+ggplot(q5a, aes(x=P, y=V)) + geom_point() + geom_line(aes(y=lr, color='red'))
+```
+
+
+c. Using the data and the model determined for V, complete the table for Pr. V=Observed Velocity, Pr=Predicted Velocity
+
+```{r}
+q5a
+```
+
+d. From the data in the previous table, calculate the mean (i.e., average) of the Bornstein errors |V(observed) - V(predicted)|. What do the results suggest about the merit of the model?
+
+```{r}
+q5a$b <- abs(q5a$V - q5a$lr)
+mean(q5a$b)
+```
+
+The average of the Bornstein errors shows that the average deviation from the model is `r mean(q5a$b)`.
+
+e. Compare the errors of the linear regression model $V = m(logP)+b$ with the Bornstein errors from d. Which is better?
+
+```{r}
+q5aSSE <- sum((q5a$V - q5a$lr)^2)
+q5aABS <- sum(abs((q5a$v - q5a$lr)^3))
+q5aMAX <- max(abs(q5a$V - q5a$lr))
+```
+
+From the linear regression we get an SSE of `r q5aSSE`, absolute standard error of `r q5aABS`, and maxium absolute error of `r q5aMAX`.
+
+
+##Page 157: 4
+
+In the following data, X represents the diameter of a ponderosa pine measured at breast height, and Y is a measure of volume--number of board feet divided by 10. Make a scatterplot of the data. Discuss the appropriateness of using a 13th-degree polynomial that passes through the data points as an empirical model. If you have a computer available, fit a polynomial to the data and graph the results.
+
+```{r}
+q6 <- data.frame(X=c(17, 19, 20, 22, 23, 25, 31, 32, 33, 36, 37, 38, 39, 41), Y=c(19, 25, 32, 51, 57, 71, 141, 123, 187, 192, 205, 252, 248, 294))
+q6
+```
+
+```{r}
+ggplot(q6, aes(x=X, y=Y)) + geom_point()
+```
+
+```{r}
+#fit polynomial model
+q6model <- lm(q6$Y ~ poly(q6$Y, 13))
+q6model
+```
+
+Seeing how small the polynomials are after the second coefficient, a thirteenth degree polynomial is not the most efficient fit but the plot will show it's accuracy. As the book states: 'High-order polynomials oscillate severely near the endpoints of the interval'
+
+```{r}
+ggplot(q6, aes(x=X, y=Y)) + geom_point() + stat_smooth(method="lm", col='red')
+```
+
+
+##Page 169: 11
+
+Construct a scatterplot of the data. Is there a trend in the data? Are any of the data points outliers? Construct a divided diffrence table. Is somoothing with a low-order polynomial appropriate? If so, choose an appropriate polynomial and fit using the least-squares criterion of best fit. Analyze the goodness of fit by examining appropriate indicators and graphing the model, the data points, and the deviations. The following data represent the length of a bass fish and its weight. L = Length (in.), W = Weight (oz.)
+
+```{r}
+q7 <- data.frame(L=c(12.5, 12.625, 14.125, 14.5, 17.25, 17.75), W=c(17, 16.5, 23, 26.5, 41, 49))
+q7
+```
+
+```{r}
+ggplot(q7, aes(x=L, y=W)) + geom_point()
+```
+
+```{r}
+#divided difference table
+q7dd <- data.frame(d1=c(0,0,0,0,0))
+
+for(i in 2:length(q7$L)){
+  n=i-1
+  q7dd[n,1] <- (q7[i,2] - q7[n,2]) / (q7[i,1] - q7[n,1])
+}
+
+q7dd$d2 <- 0
+for(i in 2:length(q7dd)){
+  n=i-1
+  j=i+1
+  q7dd[n,2] <- (q7dd[i,1] - q7dd[n,1]) / (q7[j,1] - q7[n,1])
+}
+
+q7dd$d3 <- 0
+for(i in 2:length(q7dd)){
+  n=i-1
+  j=i+3
+  q7dd[n,3] <- (q7dd[i,2] - q7dd[n,2]) / (q7[j,1] - q7[n,1])
+}
+
+q7dd
+```
+
+It appears that smoothing should be appropraite for the low-order polynomial.
+
+
+```{r}
+#fit polynomial model
+q7model <- lm(q7$L ~ poly(q7$W, 2))
+```
+
+```{r}
+ggplot(q7, aes(x=W, y=L)) + geom_point() + geom_line(aes(y=q7model$fitted.values, color='red'))
+```
+
+
+##Page 181: 5
+
+The cost of a postage stamp -- Consider the following data. Use the procedures in this chapter to capture the trend of the data if one exists. Would you eliminate any data points? Why? Would you be willing to use your model to predict the price of a postage stamp on January 1, 2010? What do the various models you construct predict about the price on January 1, 2010? When will the price reach $1? You might enjoy reading the article on which this problem is based: Donald R. Byrkit and Robert E. Lee, "The Cost of a Postage Stamp, or Up, Up, and Away," Mathmatics and Computer Education 17, no. 3 (Summer 1983): 184-190. P = First Class Stamp
+
+
+```{r}
+q8 <- data.frame(date=c('1885-1917', '1917-1919', '1919', 'July 6, 1932', 'August 1, 1958', 'January 7, 1963', 'January 7, 1968', 'May 16, 1971', 'March 2, ,1974', 'December 31, 1975', 'July 18, 1976', 'May 15, 1978', 'March 22, 1981', 'November 1, 1981', 'February 17, 1985', 'April 3, 1988', 'February 3, 1991', 'January 1, 1995', 'January 10, 1999', 'January 7, 2001', 'June 30, 2002', 'January 8, 2006', 'May 14, 2007', 'May 12, 2008', 'May 11, 2009', 'January 22, 2012'), P=c(0.02, 0.03, 0.02, 0.03, 0.04, 0.05, 0.06, 0.08, 0.10, 0.13, 0.13, 0.15, 0.18, 0.20, 0.22, 0.25, 0.29, 0.32, 0.33, 0.34, 0.37, 0.39, 0.41, 0.42, 0.44, 0.45), 'comment'=c('', '(Wartime increase)', '(Restored by Congress)', '', '', '', '', '', '', '(Temporary)', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''))
+q8$x <- 1:length(q8$date)
+q8$date <- as.character(q8$date)
+q8$year <- as.integer(substr(q8$date, (nchar(q8$date)+1)-4, nchar(q8$date)))
+q8
+```
+
+```{r}
+ggplot(q8, aes(x=year, y=P)) + geom_point()
+```
+
+Looking at the plot of stamp prices across the years, it would be simple to conclude that the first 4 points should be excluded because the spread between the years could skew the plot. Using the model to predict the price of the stamp on January 1st, 2010 would be reasonable since the plot seems fairly linear.
+
+```{r}
+q8b <- q8[5:length(q8$P),]
+q8model <- lm(q8b$P ~ q8b$year)
+q8model
+```
+
+```{r}
+ggplot(q8b, aes(x=year, y=P)) + geom_point() + geom_line(aes(y=q8model$fitted.values, color='red'))
+```
+
+```{r}
+#prediction for 2010
+q82010 <- q8model$coefficients[[1]] + 2010 * q8model$coefficients[[2]]
+```
+
+The prediction for stamp prices at 2010 using this model is `r q82010`.
+
+```{r}
+q81year <- (1-q8model$coefficients[[1]])/q8model$coefficients[[2]]
+round(q81year)
+```
+
+This model also predicts that the stamp price will hit $1 in the year `r round(q81year)`.
