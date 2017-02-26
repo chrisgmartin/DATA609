@@ -1,0 +1,197 @@
+---
+title: "DATA609 - Homework Five - Chapter Six"
+author: "Chris G Martin"
+date: "March 5, 2017"
+output:
+  html_document:
+    fig_caption: yes
+    force_captions: yes
+    highlight: pygments
+    number_sections: no
+    theme: united
+  pdf_document:
+    fig_caption: yes
+    highlight: pygments
+    latex_engine: xelatex
+    number_sections: no
+fontsize: 11pt
+---
+
+#Week Five Homework
+
+```{r echo=FALSE, message=FALSE, error=FALSE}
+library(ggplot2)
+```
+
+
+##Page 228: 1
+
+Consider a model for the long-term dining behavior of the students at College USA. It is found that 25% of the students who eat at the college's Grease Dining Hall return to eat there again, whereas those who eat at Sweet Dining Hall have a 93% return rate. These are the only two dining halls available on campus, and assume that all students eat at one of these halls. Formulate a model to solve for the long-term percentage of students eating at each hall.
+
+Consider the two formulas below as our model where G = Grease Dining Hall, S = Sweet Dining Hall, and n = current period. At G(n+1), where n+1 is the future state, 25% of those eating at G return and 7% of those who eat at S switch to G. On the other hand, S(n+1) has 93% of those eating at S return and 75% of those eating at G switch to S.
+
+$G(n+1) = G(n) * 0.25 + S(n) * 0.07$
+$S(n+1) = S(n) * 0.93 + G(n) * 0.75$
+
+If we use this model with three different scenarios using 1000 students, we can see the trends;
+
+```{r}
+#at time n
+#500 students at G
+#500 students at S
+q1a <- data.frame(n=(1:15), G=c(0), S=c(0))
+q1a$G[1] <- 500
+q1a$S[1] <- 500
+for(i in 2:15){
+  n <- i - 1
+  q1a[i,2] <- q1a[n,2] * 0.25 + q1a[n,3] * 0.07
+  q1a[i,3] <- q1a[n,3] * 0.93 + q1a[n,2] * 0.75
+  i < i + 1
+}
+q1a
+```
+
+```{r}
+#at time n
+#500 students at G
+#500 students at S
+q1b <- data.frame(n=(1:15), G=c(0), S=c(0))
+q1b$G[1] <- 750
+q1b$S[1] <- 250
+for(i in 2:15){
+  n <- i - 1
+  q1b[i,2] <- q1b[n,2] * 0.25 + q1b[n,3] * 0.07
+  q1b[i,3] <- q1b[n,3] * 0.93 + q1b[n,2] * 0.75
+  i < i + 1
+}
+q1b
+```
+
+```{r}
+#at time n
+#500 students at G
+#500 students at S
+q1c <- data.frame(n=(1:15), G=c(0), S=c(0))
+q1c$G[1] <- 250
+q1c$S[1] <- 750
+for(i in 2:15){
+  n <- i - 1
+  q1c[i,2] <- q1c[n,2] * 0.25 + q1c[n,3] * 0.07
+  q1c[i,3] <- q1c[n,3] * 0.93 + q1c[n,2] * 0.75
+  i < i + 1
+}
+q1c
+```
+
+Under each scenario, the model returns to a steady state of G = `r q1a[15,2]` and S = `r q1a[15,3]` but the time it takes to reach this steady state differs.
+
+
+##Page 232: 1
+
+Consder a stereo CD player, FM-AM radio tuner, speakers (dual), and power amplifier (PA) components, as displayed with the reliabilities shown in Figure below. Determine the system's reliability. What assumptions are required in your model?
+
+In > PA (0.95) > CD (0.98) | FM-AM Radio (0.97) > Speaker 1 (0.99) | Speaker 2 (0.99) > Out
+
+Consider the following model where P(N,S) is the probability for each step (e.g. P2 = CD | FM-AM Radio and P21 = CD and P22 = FM-AM Radio) and SR = system reliability.
+
+$SR = P1 * (P21 + P22 - P21 * P22) * (P31 + P32 - P31 * P32)$
+
+```{r}
+P1 <- 0.95
+P21 <- 0.98
+P22 <- 0.97
+P31 <- 0.99
+P32 <- 0.99
+SR <- P1 * (P21 + P22 - P21 * P22) * (P31 + P32 - P31 * P32)
+```
+
+The reliability of the system is `r SR`, with assumptions that the system requires all steps to be fully funtional with steps 2 and 3 being a parallel system where only one of the two need to be functional.
+
+
+##Page 240: 1
+
+Use the basic linear model $y = ax + b$ to fit the dataset. Provide the model, provide the values of SSE, SSR, SST, and $R^2$, and provide the residual plot. Predict weight as a function of height.
+
+```{r}
+q3 <- data.frame(height=c(60:80), weight=c(132, 136, 141, 145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 201, 206, 212, 218, 223, 229, 234))
+q3
+```
+
+
+```{r}
+q3m <- length(q3$height)
+q3a <- ((q3m*(sum(q3$height*q3$weight))) - (sum(q3$height) * sum(q3$weight))) / ((q3m * sum(q3$height^2)) - (sum(q3$height))^2)
+q3b <- ((sum(q3$height^2) * sum(q3$weight)) - (sum(q3$height * q3$weight) * sum(q3$height))) / ((q3m * sum(q3$height^2)) - (sum(q3$height)^2))
+```
+
+We now have a funciton of y = `r q3a` * x + `r q3b`, which we can input into the table and plot against the original data.
+
+```{r}
+q3$pred <- q3a * q3$height + q3b
+q3
+```
+
+```{r}
+ggplot(q3, aes(x=height, y=weight)) + geom_point() + geom_line(y=q3$pred, color='red')
+```
+
+```{r}
+q3SSE <- sum((q3$weight - (q3a * q3$height + q3b))^2)
+q3SST <- sum((q3$weight - mean(q3$pred))^2)
+q3SSR <- q3SST - q3SSE
+q3R2 <- 1 - (q3SSE / q3SST)
+```
+
+Using this model, the SSE is `r q3SSE` and the SST is `r q3SST` making the SSR to be `r q3SSR` and the $R^2$ to be `r q3R2`. And the plot of the residuals are then:
+
+```{r}
+q3$resid <- q3$weight - q3$pred
+ggplot(q3, aes(x=height, y=resid)) + geom_point() + scale_x_continuous() + geom_line(y=0)
+```
+
+The residual plot shows an obvious trend, in which case further investigation of the model would need to be performed.
+
+
+
+##Page 240: 2
+
+Use the basic linear model $y = ax + b$ to fit the dataset. Provide the model, provide the values of SSE, SSR, SST, and $R^2$, and provide the residual plot. predict weight as a function of the cube of height.
+
+```{r}
+q4 <- data.frame(height=c(60:80), weight=c(132, 136, 141, 145, 150, 155, 160, 165, 170, 175, 180, 185, 190, 195, 201, 206, 212, 218, 223, 229, 234))
+q4$height <- q4$height^3
+q4
+```
+
+```{r}
+q4m <- length(q3$height)
+q4a <- ((q4m*(sum(q4$height*q4$weight))) - (sum(q4$height) * sum(q4$weight))) / ((q4m * sum(q4$height^2)) - (sum(q4$height))^2)
+q4b <- ((sum(q4$height^2) * sum(q4$weight)) - (sum(q4$height * q4$weight) * sum(q4$height))) / ((q4m * sum(q4$height^2)) - (sum(q4$height)^2))
+```
+
+We now have a funciton of y = `r q4a` * x + `r q4b`, which we can input into the table and plot against the original data.
+
+```{r}
+q4$pred <- q4a * q4$height + q4b
+q4
+```
+
+```{r}
+ggplot(q4, aes(x=height, y=weight)) + geom_point() + geom_line(y=q4$pred, color='red')
+```
+
+```{r}
+q4SSE <- sum((q4$weight - (q4a * q4$height + q4b))^2)
+q4SST <- sum((q4$weight - mean(q4$pred))^2)
+q4SSR <- q4SST - q4SSE
+q4R2 <- 1 - (q4SSE / q4SST)
+```
+
+Using this model, the SSE is `r q4SSE` and the SST is `r q4SST` making the SSR to be `r q4SSR` and the $R^2$ to be `r q4R2`. And the plot of the residuals are then:
+
+```{r}
+q4$resid <- q4$weight - q4$pred
+ggplot(q4, aes(x=height, y=resid)) + geom_point() + scale_x_continuous() + geom_line(y=0)
+```
+
+Like the previous model, the residual plot here shows an obvious trend, in which case further investigation of both models would need to be performed.
